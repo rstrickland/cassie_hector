@@ -24,7 +24,6 @@ object CassieClient extends App {
 
     val completedRequests = new AtomicInteger(0)
     val completedLoops = new AtomicInteger(0)
-    collection.parallel.ForkJoinTasks.defaultForkJoinPool.setParallelism(concurrency)
 
     println("Press ENTER to start test")
     val BLOCK = readLine()
@@ -69,22 +68,6 @@ object CassieClient extends App {
         loop()
       }
 
-    Thread.sleep(Long.MaxValue)
-
-    /*
-
-    (1 to totalRequests).par.foreach { _ =>
-      val bi = LexicalUUID(MicrosecondEpochClock).toString()
-
-      batchInfo.batch()
-        .insert(bi, Column("test1", IntCodec.encode(5)).ttl(ttl))
-        .insert(bi, Column("test2", LongCodec.encode(MicrosecondEpochClock.timestamp)).ttl(ttl))
-        .execute()()
-
-      completedRequests.incrementAndGet
-    }
-    */
-
-    
+    Thread.sleep(Long.MaxValue)    
   }
 }

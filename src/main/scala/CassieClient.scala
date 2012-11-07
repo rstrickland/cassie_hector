@@ -45,28 +45,27 @@ object CassieClient extends App {
       }
     }
 
-    val loops =
-      (1 to concurrency).map { _ =>
-        def loop(): Future[Unit] = {
-          val bi = LexicalUUID(MicrosecondEpochClock).toString()
-          batchInfo.batch()
-            .insert(bi, Column("test1", IntCodec.encode(5)).ttl(ttl))
-            .insert(bi, Column("test2", LongCodec.encode(MicrosecondEpochClock.timestamp)).ttl(ttl))
-            .execute()
-            .flatMap { _ =>
-              if (completedRequests.getAndIncrement < totalRequests) {
-                // fire another request
-                loop()
-              } else {
-                // we're done
-                complete()
-                Future.Unit
-              }
+    (1 to concurrency).map { _ =>
+      def loop(): Future[Unit] = {
+        val bi = LexicalUUID(MicrosecondEpochClock).toString()
+        batchInfo.batch()
+          .insert(bi, Column("test1", IntCodec.encode(5)).ttl(ttl))
+          .insert(bi, Column("test2", LongCodec.encode(MicrosecondEpochClock.timestamp)).ttl(ttl))
+          .execute()
+          .flatMap { _ =>
+            if (completedRequests.getAndIncrement < totalRequests) {
+              // fire another request
+              loop()
+            } else {
+              // we're done
+              complete()
+              Future.Unit
             }
-        }
-        // fire an async loop per `concurrency`
-        loop()
+          }
       }
+      // fire an async loop per `concurrency`
+      loop()
+    }
 
     Thread.sleep(Long.MaxValue)    
   }
